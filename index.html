@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Card Generator</title>
+    <style>
+        /* Basic styling to ensure each bingo card starts on a new page when printing */
+        .bingoCard {
+            page-break-before: always;
+            border: 1px solid black;
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            width: 20%;
+            height: 100px;
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid black;
+        }
+
+        .free {
+            background-color: lightgray;
+        }
+
+        .marked {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div>
+        <textarea id="songList" rows="10" cols="50" placeholder="Enter song names, one per line"></textarea>
+        <br>
+        <label for="numCards">Number of Bingo Cards:</label>
+        <input type="number" id="numCards" value="1">
+        <br>
+        <button onclick="generateCards()">Generate Bingo Cards</button>
+        <button onclick="window.print()">Print Bingo Cards</button>
+    </div>
+
+    <div id="bingoCardsContainer">
+        <!-- Bingo cards will be generated here -->
+    </div>
+
+    <script>
+         const testSongs = [
+        "Led Zeppelin - Stairway to Heaven",
+        "The Rolling Stones - Paint It Black",
+        "Queen - Bohemian Rhapsody",
+        "The Beatles - Come Together",
+        "Jimi Hendrix - Purple Haze",
+        "AC/DC - Back in Black",
+        "The Eagles - Hotel California",
+        "Pink Floyd - Comfortably Numb",
+        "Aerosmith - Dream On",
+        "Guns N' Roses - Sweet Child o' Mine",
+        "Deep Purple - Smoke on the Water",
+        "Black Sabbath - Paranoid",
+        "The Who - Baba O'Riley",
+        "Nirvana - Smells Like Teen Spirit",
+        "David Bowie - Space Oddity",
+        "U2 - With or Without You",
+        "Metallica - Enter Sandman",
+        "The Doors - Light My Fire",
+        "Red Hot Chili Peppers - Under the Bridge",
+        "The Clash - London Calling",
+        "Pearl Jam - Alive",
+        "Radiohead - Creep",
+        "Dire Straits - Sultans of Swing",
+        "The Police - Every Breath You Take",
+        "Journey - Don't Stop Believin'",
+        "Lynyrd Skynyrd - Free Bird",
+        "Fleetwood Mac - Go Your Own Way",
+        "R.E.M. - Losing My Religion",
+        "Oasis - Wonderwall",
+        "The Beatles - Let It Be",
+        "Green Day - Boulevard of Broken Dreams",
+        "The Rolling Stones - (I Can't Get No) Satisfaction",
+        "Rush - Tom Sawyer",
+        "Bon Jovi - Livin' on a Prayer",
+        "Cream - Sunshine of Your Love",
+        "Bruce Springsteen - Born to Run",
+        "The Ramones - Blitzkrieg Bop",
+        "AC/DC - Highway to Hell",
+        "Van Halen - Jump",
+        "Pink Floyd - Another Brick in the Wall",
+        "ZZ Top - La Grange",
+        "Foo Fighters - Everlong",
+        "Led Zeppelin - Whole Lotta Love",
+        "The Cure - Just Like Heaven",
+        "Eric Clapton - Layla",
+        "The Kinks - You Really Got Me",
+        "Aerosmith - Walk This Way",
+        "Jimi Hendrix - All Along the Watchtower",
+        "Queen - Another One Bites the Dust",
+        "Soundgarden - Black Hole Sun",
+        "The Beatles - Hey Jude",
+        "The Who - My Generation",
+        "The Rolling Stones - Start Me Up",
+        "AC/DC - Thunderstruck",
+        "Billy Joel - We Didn't Start the Fire",
+        "Tom Petty - Free Fallin'",
+        "Iron Maiden - Run to the Hills",
+        "Prince - Purple Rain",
+        "The Eagles - Take It Easy",
+        "Nirvana - Come As You Are",
+        "The Doors - Roadhouse Blues",
+        "The Clash - Should I Stay or Should I Go",
+        "Queen - We Will Rock You",
+        "Led Zeppelin - Kashmir",
+        "Boston - More Than a Feeling",
+        "Metallica - Nothing Else Matters",
+        "U2 - Sunday Bloody Sunday",
+        "Aerosmith - Sweet Emotion",
+        "Guns N' Roses - November Rain",
+        "The White Stripes - Seven Nation Army",
+        "Bob Dylan - Like a Rolling Stone",
+        "The Rolling Stones - Angie",
+        "Oasis - Champagne Supernova",
+        "The Beatles - While My Guitar Gently Weeps",
+        "Radiohead - Paranoid Android",
+        "Pink Floyd - Money",
+        "Journey - Any Way You Want It",
+        "The Police - Roxanne",
+        "R.E.M. - Everybody Hurts",
+        "The Who - Pinball Wizard",
+        "John Lennon - Imagine",
+        "Bon Jovi - Wanted Dead or Alive",
+        "Jimi Hendrix - Hey Joe",
+        "Black Sabbath - Iron Man",
+        "The Rolling Stones - Brown Sugar",
+        "Bruce Springsteen - Dancing in the Dark",
+        "Red Hot Chili Peppers - Californication",
+        "Def Leppard - Pour Some Sugar On Me",
+        "The Doors - People Are Strange",
+        "ZZ Top - Sharp Dressed Man",
+        "The Beatles - Revolution",
+        "Guns N' Roses - Paradise City",
+        "Metallica - Master of Puppets",
+        "Queen - We Are the Champions",
+        "Led Zeppelin - Rock and Roll",
+        "AC/DC - You Shook Me All Night Long",
+        "Nirvana - Lithium",
+        "Van Halen - Panama",
+        "Pink Floyd - Wish You Were Here",
+        "The Rolling Stones - Jumpin' Jack Flash",
+        "The Clash - Rock the Casbah",
+        "The Eagles - Desperado",
+      ];
+
+        // Populate the textarea with the test songs on page load
+        window.onload = function() {
+            document.getElementById('songList').value = testSongs.join('\n');
+        };
+
+        function generateCards() {
+            const songList = document.getElementById('songList').value.split('\n').filter(Boolean);
+            const numCards = document.getElementById('numCards').value;
+
+            if (songList.length < 24) {
+                alert('Please input at least 24 songs');
+                return;
+            }
+
+            let cardsHTML = '';
+            for (let cardNum = 0; cardNum < numCards; cardNum++) {
+                cardsHTML += generateSingleCardHTML(songList);
+            }
+
+            document.getElementById('bingoCardsContainer').innerHTML = cardsHTML;
+        }
+
+        function generateSingleCardHTML(songList) {
+            const shuffledSongs = shuffleArray([...songList]);
+            let cardHTML = '<div class="bingoCard"><table>';
+
+            for (let i = 0; i < 5; i++) {
+                cardHTML += '<tr>';
+                for (let j = 0; j < 5; j++) {
+                    if (i === 2 && j === 2) {
+                        cardHTML += '<td class="free">Free</td>';
+                    } else {
+                        cardHTML += `<td>${shuffledSongs.pop()}</td>`;
+                    }
+                }
+                cardHTML += '</tr>';
+            }
+
+            cardHTML += '</table></div>';
+            return cardHTML;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+    </script>
+
+</body>
+
+</html>
